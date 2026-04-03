@@ -8,10 +8,10 @@ function Pricing() {
   const [fromCurrency, setFromCurrency] = useState("NGN");
   const [toCurrency, setToCurrency] = useState("CAD");
   const [recipientGets, setRecipientGets] = useState(0);
+  const [recipientName, setRecipientName] = useState(""); // ✅ added recipient name
 
   const navigate = useNavigate();
 
-  // Mock exchange rates relative to NGN
   const exchangeRates = {
     NGN: 1,
     USD: 0.0024,
@@ -50,25 +50,30 @@ function Pricing() {
 
   const countries = Object.keys(exchangeRates).map((code) => ({
     code,
-    name: code, // for simplicity, just using code; you can map to full names if needed
+    name: code,
   }));
 
-  // Update recipientGets whenever amount, fromCurrency, or toCurrency changes
   useEffect(() => {
     const rate = exchangeRates[toCurrency] / exchangeRates[fromCurrency];
     setRecipientGets((amount * rate).toFixed(2));
   }, [amount, fromCurrency, toCurrency]);
 
   const handleSendMoney = () => {
+    if (!recipientName) {
+      alert("Please enter recipient name!");
+      return;
+    }
+
     const transfer = {
       id: Date.now(),
       amount,
       fromCurrency,
       toCurrency,
+      recipientName, // ✅ include recipient name
       recipientGets,
       date: new Date().toLocaleString(),
       title: `Transfer ${amount} ${fromCurrency} → ${toCurrency}`,
-      content: `Sending ${amount} ${fromCurrency} to ${toCurrency} (Recipient gets ${recipientGets} ${toCurrency})`,
+      content: `Sending ${amount} ${fromCurrency} to ${recipientName} (${toCurrency}) - Recipient gets ${recipientGets} ${toCurrency}`,
     };
 
     const existingTransfers = JSON.parse(localStorage.getItem("transfers")) || [];
@@ -76,7 +81,7 @@ function Pricing() {
     localStorage.setItem("transfers", JSON.stringify(updatedTransfers));
 
     alert("✅ Transfer saved!");
-    navigate("/Transfer"); // redirect to dashboard
+    navigate("/Transfer");
   };
 
   return (
@@ -90,11 +95,20 @@ function Pricing() {
         <Row className="align-items-center mb-3">
           <Col>
             <Form.Label className="text-muted">You send</Form.Label>
-            <Form.Control type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
+            <Form.Control
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
           </Col>
+          
           <Col>
             <Form.Label className="text-muted">From</Form.Label>
-            <Form.Control as="select" value={fromCurrency} onChange={(e) => setFromCurrency(e.target.value)}>
+            <Form.Control
+              as="select"
+              value={fromCurrency}
+              onChange={(e) => setFromCurrency(e.target.value)}
+            >
               {countries.map((c) => (
                 <option key={c.code} value={c.code}>
                   {c.code} - {c.name}
@@ -106,12 +120,31 @@ function Pricing() {
 
         <Row className="align-items-center mb-3">
           <Col>
-            <Form.Label className="text-muted">Recipient gets</Form.Label>
-            <Form.Control type="text" value={recipientGets} readOnly />
+            <Form.Label className="text-muted">Recipient Name</Form.Label>
+            <Form.Control
+              type="text"
+              value={recipientName}
+              placeholder="Enter recipient name"
+              onChange={(e) => setRecipientName(e.target.value)}
+            />
           </Col>
+
+          <Col>
+            <Form.Label className="text-muted">Recipient gets</Form.Label>
+            <Form.Control
+              type="text"
+              value={recipientGets}
+              readOnly
+            />
+          </Col>
+
           <Col>
             <Form.Label className="text-muted">To</Form.Label>
-            <Form.Control as="select" value={toCurrency} onChange={(e) => setToCurrency(e.target.value)}>
+            <Form.Control
+              as="select"
+              value={toCurrency}
+              onChange={(e) => setToCurrency(e.target.value)}
+            >
               {countries.map((c) => (
                 <option key={c.code} value={c.code}>
                   {c.code} - {c.name}

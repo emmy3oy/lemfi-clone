@@ -5,12 +5,10 @@ const Dashboard = () => {
   const [transfers, setTransfers] = useState([]);
   const [totals, setTotals] = useState({}); // for summary
 
-  // Load transfers from localStorage
   useEffect(() => {
     const storedTransfers = JSON.parse(localStorage.getItem("transfers")) || [];
     setTransfers(storedTransfers);
 
-    // Compute totals per currency
     const summary = storedTransfers.reduce((acc, t) => {
       if (!acc[t.fromCurrency]) {
         acc[t.fromCurrency] = { sent: 0, received: 0 };
@@ -66,6 +64,8 @@ const Dashboard = () => {
           <Row>
             <Col>
               <h5>{transfer.title}</h5>
+              <p><strong>Recipient Name:</strong> {transfer.recipientName}</p>
+
               <p>{transfer.content}</p>
               <p>
                 <strong>Recipient gets:</strong> {transfer.recipientGets} {transfer.toCurrency}
